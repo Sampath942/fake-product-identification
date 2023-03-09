@@ -3,8 +3,10 @@
 pragma solidity >=0.8.2 <0.9.0;
 
 import "./DateTime.sol";
+
 import "./Strings.sol";
 
+// contract deployed to 0x5FbDB2315678afecb367f032d93F642f64180aa3
 
 contract fpi {
 
@@ -98,14 +100,14 @@ contract fpi {
         if(bytes(OwnerToName[msg.sender]).length > 0) {
             uint _id=hashToId[_hash];
             _transfer_item(msg.sender,_to,_id);
-            
+
         }
         else {
             emit AddUsernamePrompt(msg.sender);
         }
     }
 
-    function _addItem (address _userAddress,string memory _name, string memory f1,string memory v1,string memory f2,string memory v2,string memory f3,string memory v3,string memory f4,string memory v4,string memory f5,string memory v5) private {
+    function _addItem (string memory _name, string memory f1,string memory v1,string memory f2,string memory v2,string memory f3,string memory v3,string memory f4,string memory v4,string memory f5,string memory v5) private {
         if(bytes(OwnerToName[msg.sender]).length > 0) {
         uint items_length=getLengthItems();
         item storage newItem=items.push();
@@ -126,7 +128,7 @@ contract fpi {
         itemToOwner[items_length]=msg.sender;
         uint uniqueHash=uint(keccak256(abi.encodePacked(items_length)));
         _recordTransaction(uniqueHash,msg.sender,msg.sender,0);
-        
+
         hashToId[uniqueHash]=items_length;
         emit itemAdded(_name,OwnerToName[msg.sender],uniqueHash);
         }
@@ -172,12 +174,12 @@ contract fpi {
         return (_names,keys,values,_hashValues);
     }
 
-    function _listAllUserItems(address _userAddress) private returns (string [] memory , string [][] memory,string [][] memory,uint [] memory ) {
-        if(bytes(OwnerToName[msg.sender]).length > 0) {
-            return _getItems(ownerItems[msg.sender]);
+    function _listAllUserItems(address _userAddress) private returns (string [] memory names, string [][] memory feature_keys,string [][] memory feature_values,uint [] memory ids) {
+        if(bytes(OwnerToName[_userAddress]).length > 0) {
+            return _getItems(ownerItems[_userAddress]);
         }
         else {
-           emit AddUsernamePrompt(msg.sender);
+           emit AddUsernamePrompt(_userAddress);
         }
     }
 
@@ -187,7 +189,7 @@ contract fpi {
     }
 
     function _addUser(address userAddress, string memory userName) internal{
-        
+
         OwnerToName[userAddress]=userName;
     }
 
@@ -203,22 +205,22 @@ contract fpi {
     function _testGetTime () public view returns (uint) {
         return block.timestamp;
     }
- 
+
     function getYearMonthDateMinuteSecond () public view returns (uint,uint,uint,uint,uint,uint) {
         uint t=_testGetTime();
         return DateTime.timestampToDateTime(t);
     }
 
-    
+
     function _testAddItem () public {
-        _addItem(msg.sender,"watch","cost","400","color","red","type","digital","","","","");
-        _addItem(msg.sender,"shirt","cost","700","color","blue","type","cotton","","","","");
-        _addItem(msg.sender,"bag","cost","1200","color","green","type","polyester","","","","");
+        _addItem("watch","cost","400","color","red","type","digital","","","","");
+        _addItem("shirt","cost","700","color","blue","type","cotton","","","","");
+        _addItem("bag","cost","1200","color","green","type","polyester","","","","");
 
     }
     function _testAddUser() public {
         _addUser(msg.sender,"user1");
-        
+
         _addUser(myAddress,"Sampath");
     }
 
