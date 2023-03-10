@@ -24,30 +24,28 @@ contract fpi {
     mapping (uint => string []) history;
     item[] public items;
 
-    function getLengthInt (uint [] memory arr) public pure returns (uint) {
-        return arr.length;
-    }
+   
 
     function getLengthItems () public view returns (uint) {
         return items.length;
     }
 
-    function _getOwnerToName () public view returns (string memory,string memory) {
-        return (OwnerToName[msg.sender],OwnerToName[myAddress]);
+    function _getOwnerToName (address _userAddress) public view returns (string memory) {
+        return (OwnerToName[_userAddress]);
     }
+ 
 
+ // _getOwnerItems is just a helper function used in test function to visualize the items......Once frontend work is complete this can be removed
     function _getOwnerItems (address user) public view returns (uint[] memory) {
         return ownerItems[user];
     }
 
-    function getItemById (uint id) internal view returns (item storage)
-    {
-        return items[id];
-    }
 
     event AddUsernamePrompt(address user);
 
     event itemAdded(string _name,string user,uint uniqueHash);
+
+    event UserDoesntExist(address user);
 
     function _removeItemFromAddress(address _from, uint _id) private returns (uint) {
         uint index=0;
@@ -79,10 +77,10 @@ contract fpi {
         }
         s=string.concat(s,Strings.toString(year),"-",Strings.toString(month),"-",Strings.toString(day)," ",Strings.toString(hour),":",Strings.toString(minute),":",Strings.toString(second)," GMT ");    
         if (flag==0) {
-        s=string.concat(s,"by ",OwnerToName[_from]," (",Strings.toHexString(uint256(uint160(_from)), 20)," )");
+        s=string.concat(s,"by ",_getOwnerToName(_from)," (",Strings.toHexString(uint256(uint160(_from)), 20)," )");
         }
         else {
-            s=string.concat(s," from ",OwnerToName[_from]," (",Strings.toHexString(uint256(uint160(_from)), 20),") to ",OwnerToName[_to]," (",Strings.toHexString(uint256(uint160(_to)), 20)," )");
+            s=string.concat(s," from ",_getOwnerToName(_from)," (",Strings.toHexString(uint256(uint160(_from)), 20),") to ",_getOwnerToName(_to)," (",Strings.toHexString(uint256(uint160(_to)), 20)," )");
         }
         history[uniqueHash].push(s);
     }
@@ -97,18 +95,21 @@ contract fpi {
     }
 
     function _transfer(address _to, uint _hash) private {
-        if(bytes(OwnerToName[msg.sender]).length > 0) {
+        if(bytes(_getOwnerToName(msg.sender)).length > 0 && bytes(_getOwnerToName(_to)).length > 0) {
             uint _id=hashToId[_hash];
             _transfer_item(msg.sender,_to,_id);
 
         }
-        else {
+        else if (bytes(_getOwnerToName(_to)).length > 0){
             emit AddUsernamePrompt(msg.sender);
+        }
+        else {
+            emit UserDoesntExist(_to);
         }
     }
 
     function _addItem (string memory _name, string memory f1,string memory v1,string memory f2,string memory v2,string memory f3,string memory v3,string memory f4,string memory v4,string memory f5,string memory v5) private {
-        if(bytes(OwnerToName[msg.sender]).length > 0) {
+        if(bytes(_getOwnerToName(msg.sender)).length > 0) {
         uint items_length=getLengthItems();
         item storage newItem=items.push();
         newItem.id=items_length;
@@ -130,7 +131,7 @@ contract fpi {
         _recordTransaction(uniqueHash,msg.sender,msg.sender,0);
 
         hashToId[uniqueHash]=items_length;
-        emit itemAdded(_name,OwnerToName[msg.sender],uniqueHash);
+        emit itemAdded(_name,_getOwnerToName(msg.sender),uniqueHash);
         }
         else {
            emit AddUsernamePrompt(msg.sender);
@@ -175,7 +176,7 @@ contract fpi {
     }
 
     function _listAllUserItems(address _userAddress) private returns (string [] memory names, string [][] memory feature_keys,string [][] memory feature_values,uint [] memory ids) {
-        if(bytes(OwnerToName[_userAddress]).length > 0) {
+        if(bytes(_getOwnerToName(_userAddress)).length > 0) {
             return _getItems(ownerItems[_userAddress]);
         }
         else {
@@ -183,11 +184,17 @@ contract fpi {
         }
     }
 
+    //Do not delete _getItemFromHash function.....even though it is not called from within the contract,
+    // we are going to use it in scan QR part of the front end code
+
     function _getItemFromHash(uint _hashValue) private view returns (item storage) {
         uint _id=hashToId[_hashValue];
         return items[_id];
     }
 
+
+
+// From here on every function used is just for the sake of testing purposes.....can be deleted once the code is completely checked and functional
     function _addUser(address userAddress, string memory userName) internal{
 
         OwnerToName[userAddress]=userName;
@@ -227,12 +234,17 @@ contract fpi {
     function _testgetOwnerItems() public view returns (uint [] memory,uint [] memory) {
         return (_getOwnerItems (msg.sender),_getOwnerItems (myAddress));
     }
-    function _testListItems() public view returns (string [] memory , string [][] memory,string [][] memory,uint [] memory ) {
-        return _getItems(ownerItems[msg.sender]);
+    function _testListItems(address _userAddress) public view returns (string [] memory , string [][] memory,string [][] memory,uint [] memory ) {
+        return _getItems(ownerItems[_userAddress]);
     }
 
-    function _testListItemsByUser () public view returns (string [] memory , string [][] memory,string [][] memory,uint [] memory) {
-        return _getItems(ownerItems[myAddress]);
+// This way looks cleaner than the previous approach
+    function _testListItemsByUser (uint flag) public view returns (string [] memory , string [][] memory,string [][] memory,uint [] memory) {
+        if (flag==0) {
+        return _testListItems(myAddress);
+        }
+            return _testListItems(msg.sender);
+
     }
 
     function _testTransferItem() public {
