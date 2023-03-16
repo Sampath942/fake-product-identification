@@ -18,11 +18,11 @@ contract fpi {
     }
     //Just a dummy hardhat address
     address constant public myAddress = 0xE0f5206BBD039e7b0592d8918820024e2a7437b9;
-    mapping (address => uint[]) ownerItems;
-    mapping (address => string) OwnerToName;
-    mapping (uint => address) itemToOwner;
-    mapping (uint => uint) hashToId;
-    mapping (uint => string []) history;
+    mapping (address => uint[]) private ownerItems;
+    mapping (address => string) public OwnerToName;
+    mapping (uint => address) public itemToOwner;
+    mapping (uint => uint) private hashToId;
+    mapping (uint => string []) public history;
     item[] public items;
 
    
@@ -95,20 +95,23 @@ contract fpi {
     }
 
     function _transfer(address _to, uint _hash) public {
-        if(bytes(_getOwnerToName(msg.sender)).length > 0 && bytes(_getOwnerToName(_to)).length > 0) {
+        assert(bytes(_getOwnerToName(msg.sender)).length > 0);
+        if(bytes(_getOwnerToName(_to)).length > 0) {
             _transfer_item(msg.sender,_to,_hash);
-
-        }
-        else if (bytes(_getOwnerToName(_to)).length > 0){
-            emit AddUsernamePrompt(msg.sender);
         }
         else {
             emit UserDoesntExist(_to);
         }
     }
 
-    function _itemAdding(string memory _name, string memory f1,string memory v1,string memory f2,string memory v2,string memory f3,string memory v3,string memory f4,string memory v4,string memory f5,string memory v5) private {
-        uint items_length=getLengthItems();
+    function emitItemAdded(string memory _name,address _userAddress,uint hash) private {
+        emit itemAdded(_name,OwnerToName[_userAddress],hash);
+    }
+
+    function _itemAdding(address _userAddress,string memory _name, string memory f1,string memory v1,string memory f2,string memory v2,string memory f3,string memory v3,string memory f4,string memory v4,string memory f5,string memory v5) private {
+        
+        {
+        uint items_length=items.length;
         item storage newItem=items.push();
         newItem.id=items_length;
         newItem.name=_name;
@@ -123,22 +126,31 @@ contract fpi {
         newItem.keys.push(f4);
         newItem.keys.push(f5);
 
-        ownerItems[msg.sender].push(items_length);
-        itemToOwner[items_length]=msg.sender;
-        uint uniqueHash=uint(keccak256(abi.encodePacked(items_length)));
-        _recordTransaction(uniqueHash,msg.sender,msg.sender,0);
+        ownerItems[_userAddress].push(items_length);
+        itemToOwner[items_length]=_userAddress;
+        }
 
+        {
+         uint items_length=items.length;
+        _recordTransaction(uint(keccak256(abi.encodePacked(items_length))),_userAddress,_userAddress,0);
+        uint uniqueHash=uint(keccak256(abi.encodePacked(items_length)));
         hashToId[uniqueHash]=items_length;
-        emit itemAdded(_name,_getOwnerToName(msg.sender),uniqueHash);
+        }
+        {
+            //uint uniqueHash=uint(keccak256(abi.encodePacked(items.length-1)));
+        //emitItemAdded(_name,_userAddress,uint(keccak256(abi.encodePacked(items_length))));
+        emit itemAdded(_name,OwnerToName[_userAddress],uint(keccak256(abi.encodePacked(items.length-1))));
+        }
+    
     }
 
 
-    function _addItem (string memory _name, string memory f1,string memory v1,string memory f2,string memory v2,string memory f3,string memory v3,string memory f4,string memory v4,string memory f5,string memory v5) public {
-        if(bytes(_getOwnerToName(msg.sender)).length > 0) {
-        _itemAdding(_name,f1,v1,f2,v2,f3,v3,f4,v4,f5,v5);
+    function _addItem (address _userAddress,string memory _name, string memory f1,string memory v1,string memory f2,string memory v2,string memory f3,string memory v3,string memory f4,string memory v4,string memory f5,string memory v5) public {
+        if(bytes(_getOwnerToName(_userAddress)).length > 0) {
+        _itemAdding(_userAddress,_name,f1,v1,f2,v2,f3,v3,f4,v4,f5,v5);
         }
         else {
-           emit AddUsernamePrompt(msg.sender);
+           emit AddUsernamePrompt(_userAddress);
         }
     }
 
@@ -179,7 +191,7 @@ contract fpi {
         return (_names,keys,values,_hashValues);
     }
 
-    function _listAllUserItems(address _userAddress) private returns (string [] memory names, string [][] memory feature_keys,string [][] memory feature_values,uint [] memory ids) {
+    function _listAllUserItems(address _userAddress) public returns (string [] memory names, string [][] memory feature_keys,string [][] memory feature_values,uint [] memory ids) {
         if(bytes(_getOwnerToName(_userAddress)).length > 0) {
             return _getItems(ownerItems[_userAddress]);
         }
@@ -190,19 +202,30 @@ contract fpi {
 
     //Do not delete _getItemFromHash function.....even though it is not called from within the contract,
     // we are going to use it in scan QR part of the front end code
+    function _getHashToId(uint _hashValue) public view returns (uint) {
+        uint _id=hashToId[_hashValue];
+        return _id;
+    }
+
+    function _getHashFromId(uint _id) public pure returns (uint) {
+        uint _hash = uint(keccak256(abi.encodePacked(_id)));
+        return _hash;
+    }
 
     function _getItemFromHash(uint _hashValue) private view returns (item storage) {
-        uint _id=hashToId[_hashValue];
+        uint _id=_getHashToId(_hashValue);
         return items[_id];
     }
 
-
-
-// From here on every function used is just for the sake of testing purposes.....can be deleted once the code is completely checked and functional
-    function _addUser(address userAddress, string memory userName) internal{
-
+    function _userAdding(address userAddress, string memory userName) private {
         OwnerToName[userAddress]=userName;
     }
+
+    function _addUser(address userAddress, string memory userName) public {
+        _userAdding(userAddress,userName);
+    }
+
+// From here on every function used is just for the sake of testing purposes.....can be deleted once the code is completely checked and functional
 
     function _testHistory () public view returns (string [][] memory) {
         uint m=0;
@@ -231,18 +254,20 @@ contract fpi {
 
 
     function _testAddItem () public {
-        _addItem("watch","cost","400","color","red","type","digital","","","","");
-        _addItem("shirt","cost","700","color","blue","type","cotton","","","","");
-        _addItem("bag","cost","1200","color","green","type","polyester","","","","");
+        _addItem(msg.sender,"watch","cost","400","color","red","type","digital","","","","");
+        _addItem(msg.sender,"shirt","cost","700","color","blue","type","cotton","","","","");
+        _addItem(msg.sender,"bag","cost","1200","color","green","type","polyester","","","","");
 
     }
     function _testAddUser() public {
+        
         _addUser(msg.sender,"user1");
 
         _addUser(myAddress,"Sampath");
     }
 
     function _testgetOwnerItems() public view returns (uint [] memory,uint [] memory) {
+        
         return (_getOwnerItems (msg.sender),_getOwnerItems (myAddress));
     }
     function _testListItems(address _userAddress) public view returns (string [] memory , string [][] memory,string [][] memory,uint [] memory ) {
@@ -252,6 +277,7 @@ contract fpi {
 // This way looks cleaner than the previous approach
     function _testListItemsByUser (uint flag) public view returns (string [] memory , string [][] memory,string [][] memory,uint [] memory) {
         if (flag==0) {
+            
         return _testListItems(myAddress);
         }
             return _testListItems(msg.sender);
@@ -259,6 +285,7 @@ contract fpi {
     }
 
     function _testTransferItem() public {
+        
         int i=0;
         _transfer_item(msg.sender,myAddress,uint(keccak256(abi.encodePacked(i+2))));
         _transfer_item(msg.sender,myAddress,uint(keccak256(abi.encodePacked(i+1))));
