@@ -108,23 +108,23 @@ contract fpi {
         emit itemAdded(_name,OwnerToName[_userAddress],hash);
     }
 
-    function _itemAdding(address _userAddress,string memory _name, string memory f1,string memory v1,string memory f2,string memory v2,string memory f3,string memory v3,string memory f4,string memory v4,string memory f5,string memory v5) private {
+    function _itemAdding(address _userAddress,string memory _name, string [] memory ftrs,string [] memory vals) private {
         
         {
         uint items_length=items.length;
         item storage newItem=items.push();
         newItem.id=items_length;
         newItem.name=_name;
-        newItem.features[f1]=v1;
-        newItem.features[f2]=v2;
-        newItem.features[f3]=v3;
-        newItem.features[f4]=v4;
-        newItem.features[f5]=v5;
-        newItem.keys.push(f1);
-        newItem.keys.push(f2);
-        newItem.keys.push(f3);
-        newItem.keys.push(f4);
-        newItem.keys.push(f5);
+        newItem.features[ftrs[0]]=vals[0];
+        newItem.features[ftrs[1]]=vals[1];
+        newItem.features[ftrs[2]]=vals[2];
+        newItem.features[ftrs[3]]=vals[3];
+        newItem.features[ftrs[4]]=vals[4];
+        newItem.keys.push(ftrs[0]);
+        newItem.keys.push(ftrs[1]);
+        newItem.keys.push(ftrs[2]);
+        newItem.keys.push(ftrs[3]);
+        newItem.keys.push(ftrs[4]);
 
         ownerItems[_userAddress].push(items_length);
         itemToOwner[items_length]=_userAddress;
@@ -137,24 +137,22 @@ contract fpi {
         hashToId[uniqueHash]=items_length;
         }
         {
-            //uint uniqueHash=uint(keccak256(abi.encodePacked(items.length-1)));
-        //emitItemAdded(_name,_userAddress,uint(keccak256(abi.encodePacked(items_length))));
         emit itemAdded(_name,OwnerToName[_userAddress],uint(keccak256(abi.encodePacked(items.length-1))));
         }
     
     }
 
 
-    function _addItem (address _userAddress,string memory _name, string memory f1,string memory v1,string memory f2,string memory v2,string memory f3,string memory v3,string memory f4,string memory v4,string memory f5,string memory v5) public {
+    function _addItem (address _userAddress,string memory _name, string [] memory ftrs,string [] memory vals) public {
         if(bytes(_getOwnerToName(_userAddress)).length > 0) {
-        _itemAdding(_userAddress,_name,f1,v1,f2,v2,f3,v3,f4,v4,f5,v5);
+        _itemAdding(_userAddress,_name,ftrs,vals);
         }
         else {
            emit AddUsernamePrompt(_userAddress);
         }
     }
 
-    function _getItems(uint [] memory _ids) private view returns (string [] memory , string [][] memory,string [][] memory ,uint[] memory ) {
+    function _getItems(uint [] memory _ids) private view returns (string [] memory, string [][] memory,string [][] memory,uint[] memory) {
         uint l=_ids.length;
         string [] memory _names= new string[](l);
         string [][] memory keys= new string [][] (l);
@@ -193,7 +191,8 @@ contract fpi {
 
     function _listAllUserItems(address _userAddress) public returns (string [] memory names, string [][] memory feature_keys,string [][] memory feature_values,uint [] memory ids) {
         if(bytes(_getOwnerToName(_userAddress)).length > 0) {
-            return _getItems(ownerItems[_userAddress]);
+            (names,feature_keys,feature_values,ids)= _getItems(ownerItems[_userAddress]);
+            return (names,feature_keys,feature_values,ids);
         }
         else {
            emit AddUsernamePrompt(_userAddress);
@@ -254,9 +253,42 @@ contract fpi {
 
 
     function _testAddItem () public {
-        _addItem(msg.sender,"watch","cost","400","color","red","type","digital","","","","");
-        _addItem(msg.sender,"shirt","cost","700","color","blue","type","cotton","","","","");
-        _addItem(msg.sender,"bag","cost","1200","color","green","type","polyester","","","","");
+        string [] memory ftrs = new string [] (5);
+        string [] memory vals = new string [] (5);
+        ftrs[0]="cost";
+        ftrs[1]="color";
+        ftrs[2]="type";
+        ftrs[3]="";
+        ftrs[4]="";
+        vals[0]="400";
+        vals[1]="red";
+        vals[2]="digital";
+        vals[3]="";
+        vals[4]="";
+        _addItem(msg.sender,"watch",ftrs,vals);
+        ftrs[0]="cost";
+        ftrs[1]="color";
+        ftrs[2]="type";
+        ftrs[3]="";
+        ftrs[4]="";
+        vals[0]="800";
+        vals[1]="white";
+        vals[2]="cotton";
+        vals[3]="";
+        vals[4]="";
+        _addItem(msg.sender,"shirt",ftrs,vals);
+        ftrs[0]="cost";
+        ftrs[1]="color";
+        ftrs[2]="type";
+        ftrs[3]="";
+        ftrs[4]="";
+        vals[0]="1200";
+        vals[1]="blue";
+        vals[2]="polyester";
+        vals[3]="";
+        vals[4]="";
+        _addItem(msg.sender,"bag",ftrs,vals);
+
 
     }
     function _testAddUser() public {
