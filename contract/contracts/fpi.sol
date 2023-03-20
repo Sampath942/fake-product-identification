@@ -48,6 +48,8 @@ contract fpi {
 
     event UserDoesntExist(address user);
 
+    event ItemsList (string [] names, string [][] feature_keys,string [][] feature_values,uint [] ids);
+
     function _removeItemFromAddress(address _from, uint _id) private returns (uint) {
         uint index=0;
         for(uint i=0;i<ownerItems[_from].length;i++) {
@@ -189,10 +191,14 @@ contract fpi {
         return (_names,keys,values,_hashValues);
     }
 
-    function _listAllUserItems(address _userAddress) public returns (string [] memory names, string [][] memory feature_keys,string [][] memory feature_values,uint [] memory ids) {
+    function _listAllUserItems(address _userAddress) public  {
         if(bytes(_getOwnerToName(_userAddress)).length > 0) {
+            string [] memory names;
+            string [][] memory feature_keys;
+            string [][] memory feature_values;
+            uint [] memory ids;
             (names,feature_keys,feature_values,ids)= _getItems(ownerItems[_userAddress]);
-            return (names,feature_keys,feature_values,ids);
+            emit ItemsList(names,feature_keys,feature_values,ids);
         }
         else {
            emit AddUsernamePrompt(_userAddress);
@@ -302,17 +308,17 @@ contract fpi {
         
         return (_getOwnerItems (msg.sender),_getOwnerItems (myAddress));
     }
-    function _testListItems(address _userAddress) public view returns (string [] memory , string [][] memory,string [][] memory,uint [] memory ) {
-        return _getItems(ownerItems[_userAddress]);
+    function _testListItems(address _userAddress) public view {
+         _getItems(ownerItems[_userAddress]);
     }
 
 // This way looks cleaner than the previous approach
-    function _testListItemsByUser (uint flag) public view returns (string [] memory , string [][] memory,string [][] memory,uint [] memory) {
+    function _testListItemsByUser (uint flag) public view {
         if (flag==0) {
             
-        return _testListItems(myAddress);
+         _testListItems(myAddress);
         }
-            return _testListItems(msg.sender);
+             _testListItems(msg.sender);
 
     }
 
