@@ -50,6 +50,8 @@ contract fpi {
 
     event ItemsList (string [] names, string [][] feature_keys,string [][] feature_values,uint [] ids);
 
+    event TransactionRecorded(string [] s,string as);
+
     function _removeItemFromAddress(address _from, uint _id) private returns (uint) {
         uint index=0;
         for(uint i=0;i<ownerItems[_from].length;i++) {
@@ -63,7 +65,7 @@ contract fpi {
         return index;
     }
 
-    function _recordTransaction (uint uniqueHash,address _from,address _to,uint flag) private {
+    function _recordTransaction (uint uniqueHash,address _from,address _to,uint flag) private{
         uint year;
         uint month;
         uint day;
@@ -86,6 +88,7 @@ contract fpi {
             s=string.concat(s," from ",_getOwnerToName(_from)," (",Strings.toHexString(uint256(uint160(_from)), 20),") to ",_getOwnerToName(_to)," (",Strings.toHexString(uint256(uint160(_to)), 20)," )");
         }
         history[uniqueHash].push(s);
+        emit TransactionRecorded(history[uniqueHash],s);
     }
 
     function _transfer_item(address _from, address _to, uint _hash) private{
@@ -96,10 +99,10 @@ contract fpi {
         _recordTransaction(_hash,_from,_to,1);
     }
 
-    function _transfer(address _to, uint _hash) public {
-        assert(bytes(_getOwnerToName(msg.sender)).length > 0);
+    function _transfer(address _from,address _to, uint _hash) public {
+        assert(bytes(_getOwnerToName(_from)).length > 0);
         if(bytes(_getOwnerToName(_to)).length > 0) {
-            _transfer_item(msg.sender,_to,_hash);
+            _transfer_item(_from,_to,_hash);
         }
         else {
             emit UserDoesntExist(_to);
@@ -181,7 +184,7 @@ contract fpi {
             value[2]=items[u].features[items[u].keys[2]];
             value[3]=items[u].features[items[u].keys[3]];
             value[4]=items[u].features[items[u].keys[4]];
-            _hashValue=items[u].id;
+            _hashValue=uint(keccak256(abi.encodePacked(items[u].id)));
             _names[i]=_name;
             keys[i]=key;
             values[i]=value;
@@ -231,7 +234,10 @@ contract fpi {
     }
 
 // From here on every function used is just for the sake of testing purposes.....can be deleted once the code is completely checked and functional
-
+    function getHistory (uint m) public view returns (string [] memory) {
+        uint mhash=uint(keccak256(abi.encodePacked(m)));
+        return history[mhash];
+    }
     function _testHistory () public view returns (string [][] memory) {
         uint m=0;
         uint mhash=uint(keccak256(abi.encodePacked(m)));
@@ -250,6 +256,11 @@ contract fpi {
 
     function _testGetTime () public view returns (uint) {
         return block.timestamp;
+    }
+
+    function purelyfortesting() public  {
+        uint h=_getHashFromId(0);
+        _recordTransaction(h,msg.sender,myAddress,0);
     }
 
     function getYearMonthDateMinuteSecond () public view returns (uint,uint,uint,uint,uint,uint) {
@@ -282,7 +293,7 @@ contract fpi {
         vals[2]="cotton";
         vals[3]="";
         vals[4]="";
-        _addItem(msg.sender,"shirt",ftrs,vals);
+       // _addItem(msg.sender,"shirt",ftrs,vals);
         ftrs[0]="cost";
         ftrs[1]="color";
         ftrs[2]="type";
@@ -293,7 +304,7 @@ contract fpi {
         vals[2]="polyester";
         vals[3]="";
         vals[4]="";
-        _addItem(msg.sender,"bag",ftrs,vals);
+       // _addItem(msg.sender,"bag",ftrs,vals);
 
 
     }
@@ -325,8 +336,8 @@ contract fpi {
     function _testTransferItem() public {
         
         int i=0;
-        _transfer_item(msg.sender,myAddress,uint(keccak256(abi.encodePacked(i+2))));
-        _transfer_item(msg.sender,myAddress,uint(keccak256(abi.encodePacked(i+1))));
+        //_transfer_item(msg.sender,myAddress,uint(keccak256(abi.encodePacked(i+2))));
+        //_transfer_item(msg.sender,myAddress,uint(keccak256(abi.encodePacked(i+1))));
         _transfer_item(msg.sender,myAddress,uint(keccak256(abi.encodePacked(i))));
     }
 }

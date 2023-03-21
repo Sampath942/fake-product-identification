@@ -38,8 +38,8 @@
               await fpi._addUser(acc1.address,"sampath");
               transaction = await fpi._addItem(acc1.address,"bag",["color","","Max weight","",""],["red","","5","",""]);
               const hashValue = await fpi._getHashFromId(0);
-              newTransaction=await fpi._transfer(acc2.address,hashValue);
-              expect(newTransaction).to.emit(fpi, "AddUsernamePrompt");
+              newTransaction=await fpi._transfer(acc1.address,acc2.address,hashValue);
+              expect(newTransaction).to.emit(fpi, "UserDoesntExist");
           })
       })
   
@@ -91,6 +91,13 @@
                   expect(my_item.id).to.equal(0);
   
               })
+              
+              it('History of item updated', async() => {
+                  await fpi._addItem(acc1.address,"bag",["color","","Max weight","",""],["red","","5","",""]);
+                  hist=await fpi.getHistory(0);
+                  console.log(hist);
+  
+              })
       })
   
       describe ("Listing item", async () => {
@@ -99,8 +106,8 @@
               await fpi._addUser(acc2.address,"kumar");
               await fpi._addUser(acc3.address,"sam");
               await fpi._addItem(acc1.address,"bag",[ 'color', '', 'Max weight', '', '' ],["red","","5","",""]);
-              //await fpi._addItem(acc1.address,"bag",["color","","Max weight","",""],["red","","5","",""]);
-  
+              hash0=await fpi._getHashFromId(0);
+              hash1=await fpi._getHashFromId(1);
           })
           it('Return item details of a bag', async () => {
              
@@ -108,7 +115,7 @@
               names = ["bag"];
               feature_keys = [[ 'color', '', 'Max weight', '', '' ]];
               feature_values = [["red","","5","",""]];
-              ids=[0];
+              ids=[hash0];
               await expect(transaction).to.emit(fpi, "ItemsList");
               receipt = await transaction.wait();
               const event = receipt.events.find(x => x.event === "ItemsList");
@@ -122,6 +129,93 @@
               
           })
   
+          it('Return empty array of item details', async () => {
+              transaction = await fpi._listAllUserItems(acc2.address);
+              await expect(transaction).to.emit(fpi, "ItemsList");
+              receipt = await transaction.wait();
+              const event = receipt.events.find(x => x.event === "ItemsList");
+              expect (event.args.ids.length).to.equal(0);
+              expect (event.args.names.length).to.equal(0);
+              expect (event.args.feature_keys.length).to.equal(0);
+              expect (event.args.feature_values.length).to.equal(0);
+              
+          })
+  
+          it('Return item details of a bag and a shirt', async () => {
+             
+              await fpi._addItem(acc1.address,"shirt",[ 'color', 'brand', 'Cost', '', '' ],["black","calvin clein","5000","",""]);
+              transaction = await fpi._listAllUserItems(acc1.address);
+              names = ["bag","shirt"];
+              feature_keys = [[ 'color', '', 'Max weight', '', '' ],['color', 'brand', 'Cost', '', '']];
+              feature_values = [["red","","5","",""],["black","calvin clein","5000","",""]];
+              ids=[hash0,hash1];
+              await expect(transaction).to.emit(fpi, "ItemsList");
+              receipt = await transaction.wait();
+              const event = receipt.events.find(x => x.event === "ItemsList");
+              for(y=0;y<2;y++)
+              {
+                  expect (event.args.ids[y]).to.equal(ids[y]);
+                  expect (event.args.names[y]).to.equal(names[y]);
+                  for(x=0;x<5;x++)
+                  {
+                      expect (event.args.feature_keys[y][x]).to.equal(feature_keys[y][x]);
+                      expect (event.args.feature_values[y][x]).to.equal(feature_values[y][x]);
+                  }
+              }
+              
+          })
+  
       })
+  
+      describe ("Transferring ownership of items", async () => {
+          beforeEach (async () => {
+              await fpi._addUser(acc1.address,"sampath");
+              await fpi._addUser(acc2.address,"kumar");
+              await fpi._addUser(acc3.address,"sam");
+              await fpi._addItem(acc1.address,"bag",[ 'color', '', 'Max weight', '', '' ],["red","","5","",""]);
+              await fpi._addItem(acc1.address,"shirt",[ 'color', 'brand', 'Cost', '', '' ],["black","calvin clein","5000","",""]);
+              await fpi._addItem(acc3.address,"watch",["cost","","color","","type"],["400","","red","","digital"]);
+              hash0=await fpi._getHashFromId(0);
+              hash1=await fpi._getHashFromId(1);
+  
+          })
+  
+          it('Transfer ownership of bag from user sampath to user kumar', async () => {
+              id = await fpi._getHashFromId(0);
+              await fpi._transfer(acc1.address,acc2.address,id);
+              transaction = await fpi._listAllUserItems(acc2.address);
+              names = ["bag"];
+              feature_keys = [[ 'color', '', 'Max weight', '', '' ]];
+              feature_values = [["red","","5","",""]];
+              ids=[hash0];
+              await expect(transaction).to.emit(fpi, "ItemsList");
+              receipt = await transaction.wait();
+              const event = receipt.events.find(x => x.event === "ItemsList");
+              expect (event.args.ids[0]).to.equal(ids[0]);
+              expect (event.args.names[0]).to.equal(names[0]);
+              for(x=0;x<5;x++)
+              {
+                  expect (event.args.feature_keys[0][x]).to.equal(feature_keys[0][x]);
+                  expect (event.args.feature_values[0][x]).to.equal(feature_values[0][x]);
+              }
+          })
+  
+          it('Check item assignment after transfer', async () => {
+              id = await fpi._getHashFromId(0);
+              await fpi._transfer(acc1.address,acc2.address,id);
+              transaction = await fpi._listAllUserItems(acc2.address);
+              names = ["bag"];
+              feature_keys = [[ 'color', '', 'Max weight', '', '' ]];
+              feature_values = [["red","","5","",""]];
+              ids=[hash0];
+              await expect(transaction).to.emit(fpi, "ItemsList");
+              receipt = await transaction.wait();
+              owner_2=await fpi.itemToOwner(0);
+              expect (owner_2).to.equal(acc2.address);
+          })
+  
+      })
+  
+      
      
   })
