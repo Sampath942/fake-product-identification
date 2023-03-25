@@ -62,6 +62,7 @@ contract fpi {
     }
 
     function _recordTransaction (uint uniqueHash,address _from,address _to,uint flag) private{
+    function _recordTransaction (uint uniqueHash,address _from,address _to,uint flag) private{
         uint year;
         uint month;
         uint day;
@@ -85,6 +86,7 @@ contract fpi {
         }
         history[uniqueHash].push(s);
         emit TransactionRecorded(history[uniqueHash],s);
+        emit TransactionRecorded(history[uniqueHash],s);
     }
 
     function _transfer_item(address _from, address _to, uint _hash) private{
@@ -95,6 +97,8 @@ contract fpi {
         _recordTransaction(_hash,_from,_to,1);
     }
 
+    function _transfer(address _from,address _to, uint _hash) public {
+        assert(bytes(_getOwnerToName(_from)).length > 0);
     function _transfer(address _from,address _to, uint _hash) public {
         assert(bytes(_getOwnerToName(_from)).length > 0);
         if(bytes(_getOwnerToName(_to)).length > 0) {
@@ -177,6 +181,7 @@ contract fpi {
             value[3]=items[u].features[items[u].keys[3]];
             value[4]=items[u].features[items[u].keys[4]];
             _hashValue=uint(keccak256(abi.encodePacked(items[u].id)));
+            _hashValue=uint(keccak256(abi.encodePacked(items[u].id)));
             _names[i]=_name;
             keys[i]=key;
             values[i]=value;
@@ -222,6 +227,10 @@ contract fpi {
         uint mhash=uint(keccak256(abi.encodePacked(m)));
         return history[mhash];
     }
+    function getHistory (uint m) public view returns (string [] memory) {
+        uint mhash=uint(keccak256(abi.encodePacked(m)));
+        return history[mhash];
+    }
     function _testHistory () public view returns (string [][] memory) {
         uint m=0;
         uint mhash=uint(keccak256(abi.encodePacked(m)));
@@ -240,6 +249,11 @@ contract fpi {
 
     function _testGetTime () public view returns (uint) {
         return block.timestamp;
+    }
+
+    function purelyfortesting() public  {
+        uint h=_getHashFromId(0);
+        _recordTransaction(h,msg.sender,myAddress,0);
     }
 
     function purelyfortesting() public  {
@@ -278,6 +292,7 @@ contract fpi {
         vals[3]="";
         vals[4]="";
        // _addItem(msg.sender,"shirt",ftrs,vals);
+       // _addItem(msg.sender,"shirt",ftrs,vals);
         ftrs[0]="cost";
         ftrs[1]="color";
         ftrs[2]="type";
@@ -288,6 +303,7 @@ contract fpi {
         vals[2]="polyester";
         vals[3]="";
         vals[4]="";
+       // _addItem(msg.sender,"bag",ftrs,vals);
        // _addItem(msg.sender,"bag",ftrs,vals);
 
 
@@ -305,14 +321,19 @@ contract fpi {
     }
     function _testListItems(address _userAddress) public view {
          _getItems(ownerItems[_userAddress]);
+    function _testListItems(address _userAddress) public view {
+         _getItems(ownerItems[_userAddress]);
     }
 
 // This way looks cleaner than the previous approach
     function _testListItemsByUser (uint flag) public view {
+    function _testListItemsByUser (uint flag) public view {
         if (flag==0) {
             
          _testListItems(myAddress);
+         _testListItems(myAddress);
         }
+             _testListItems(msg.sender);
              _testListItems(msg.sender);
 
     }
