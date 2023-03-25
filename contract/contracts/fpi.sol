@@ -61,7 +61,7 @@ contract fpi {
         return index;
     }
 
-    function _recordTransaction (uint uniqueHash,address _from,address _to,uint flag) private{
+   
     function _recordTransaction (uint uniqueHash,address _from,address _to,uint flag) private{
         uint year;
         uint month;
