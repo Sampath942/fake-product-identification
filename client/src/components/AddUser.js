@@ -15,7 +15,10 @@ const AddUser = ({Fpi,account,flag}) => {
     const handleClick = async () => {
       await Fpi._addUser(account,userName);
       console.log("success");
+      
       setButtonClicked(true);
+      console.log(buttonClicked);
+      console.log(flag);
     //   const UserName = await Fpi._getOwnerToName(account);
     //   console.log(UserName);
     };

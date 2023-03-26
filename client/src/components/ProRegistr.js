@@ -5,12 +5,14 @@ import { ethers } from "ethers"
 import fpi from "../fpi.json";
 import { useState,useEffect,useRef } from 'react';
 import AddUser from './AddUser';
+import QrCode from './QrCode';
 
 const ProRegistr = ({account}) => {
  const [Fpi,setFpi] = useState(null);
  const [provider,setProvider] = useState(null);
  const [userName,setUserName] = useState(null);
  const [loading,setLoading] = useState(true);
+ const [uniqueHash,setUniqueHash] = useState('');
  useEffect (() => {
   setLoading(true);
   const loadProvider= async () => {
@@ -49,12 +51,14 @@ const ProRegistr = ({account}) => {
   `)
   const KeysArray =[key1.current.value,key2.current.value,key3.current.value,key4.current.value,key5.current.value];
   const valuesArray =[val1.current.value,val2.current.value,val3.current.value,val4.current.value,val5.current.value];
-    await Fpi._addItem(account,proname.current.value,KeysArray,valuesArray);
-   const useritems=await Fpi._listAllUserItems(account);
-   const names=useritems.names;
-   console.log(account);
-   console.log(useritems);
-   console.log(names);
+  const transaction = await Fpi._addItem(account,proname.current.value,KeysArray,valuesArray);
+  const receipt = await transaction.wait();
+  const uniqueHash = receipt.events[1].args.uniqueHash;
+  console.log(transaction);
+  console.log(receipt);
+  console.log(uniqueHash);
+  setUniqueHash(uniqueHash);
+
 }
  
   const proname = useRef('');
@@ -77,8 +81,8 @@ const ProRegistr = ({account}) => {
   return (
     <>
     {loading && <div>Loading......</div>}
-    {!loading && !userName && userName==='' && <AddUser Fpi={Fpi} account={account}/>}
-        {!loading && userName && userName!=='' && <div className='dd'>
+    {!loading && !userName && userName==='' && uniqueHash==='' &&<AddUser Fpi={Fpi} account={account} flag={0}/>}
+        {!loading && userName && userName!=='' && uniqueHash==='' && <div className='dd'>
       <form onSubmit={handleSubmit}>
 
                 <div className="cards">
@@ -188,6 +192,7 @@ const ProRegistr = ({account}) => {
         </div>
       </form>
       </div>}
+      {!loading && userName && userName!=='' && uniqueHash!=='' && <QrCode />}
     </>
   )
 } 
