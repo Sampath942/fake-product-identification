@@ -1,8 +1,9 @@
 import { Link } from "react-router-dom";
-
+import { useState } from "react";
 
 
 const Welcome = () => {
+  const [defaultAccount, setDefaultAccount] = useState(null);
     return (
         <div className="container-fluid d-flex justify-content-center align-items-center" style={{ height: "100vh" }}>
       <div className="text-center">
