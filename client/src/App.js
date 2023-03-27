@@ -9,8 +9,7 @@ import ScanProduct from './components/ScanProduct';
 import NotFound from './components/NotFound';
 import QrCode from './components/QrCode';
 import Welcome from './components/Welcome';
-import WalletCardEthers from'./components/WalletCardEthers';
-import WalletCardEthers2 from'./components/WalletCardEthers2';
+
 import ProRegistr from './components/ProRegistr';
 
 
@@ -26,8 +25,6 @@ function App() {
     <Route exact path="/add" element={<AddProduct />} />
     <Route exact path="/list" element={<ListProducts />} />
     <Route exact path="/scan" element={<ScanProduct />} />
-    <Route exact path="/WalletCardEthers" element={<WalletCardEthers />} />
-    <Route exact path="/WalletCardEthers2" element={<WalletCardEthers2 />} />
     <Route exact path="/ProRegistr" element={<ProRegistr />} />
     <Route exact path="/QrCode" element={<QrCode />} />
     <Route path="*" element={<NotFound />}/>

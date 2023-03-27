@@ -1,4 +1,4 @@
-import './listproducts.module.css';
+import './listproducts.css';
 import { ethers } from "ethers"
 import fpi from "../fpi.json";
 import { useState,useEffect,useRef } from 'react';
