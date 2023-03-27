@@ -1,14 +1,13 @@
 const {
     time,
-    
+    loadFixture,
   } = require("@nomicfoundation/hardhat-network-helpers");
-  
-  require( "@nomicfoundation/hardhat-chai-matchers");
+  const { anyValue } = require("@nomicfoundation/hardhat-chai-matchers/withArgs");
   const { expect } = require("chai");
 
 
 
-  describe ("fpi", () => {
+ describe ("fpi", () => {
     beforeEach (async () => {
         const Fpi=await ethers.getContractFactory("fpi");
         fpi=await Fpi.deploy();
@@ -87,6 +86,24 @@ const {
                 expect (owner_2).to.equal(acc2.address);
                 expect (owner_3).to.equal(acc3.address);
             })
+            it('History of item updated for a multiple products adding', async() => {
+                await fpi._addItem(acc1.address,"bag",["color","","Max weight","",""],["red","","5","",""]);
+                await fpi. _addItem(acc2.address,"shirt",["cost","","color","","type"],["700","","blue","","cotton"]);
+                await fpi._addItem(acc3.address,"watch",["cost","","color","","type"],["400","","red","","digital"]);                
+                hist = await fpi.getHistory(0);
+                hist1 = await fpi.getHistory(1);
+                hist2 = await fpi.getHistory(2);
+                //console.log(hist);
+                expect(hist.length).to.equal(1);
+                expect(hist1.length).to.equal(1);
+                expect(hist2.length).to.equal(1);
+                const histString=hist[0].split(' ').reverse().slice(0,5).reverse().join(' ');
+                expect(histString).to.equal("GMT by sampath (0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 )");
+                const histString1=hist1[0].split(' ').reverse().slice(0,5).reverse().join(' ');
+                expect(histString1).to.equal("GMT by kumar (0x70997970c51812dc3a010c7d01b50e0d17dc79c8 )");
+                const histString2=hist2[0].split(' ').reverse().slice(0,5).reverse().join(' ');
+                expect(histString2).to.equal("GMT by sam (0x3c44cdddb6a900fa2b585dd299e03d12fa4293bc )");
+            })
             it ('Add item with name bag and id 0', async () => {
                 await fpi._addItem(acc1.address,"bag",["color","","Max weight","",""],["red","","5","",""]);
                 my_item=await fpi.items(0);
@@ -95,11 +112,12 @@ const {
 
             })
             
-            it('History of item updated', async() => {
+            it('History of item updated for a single product adding', async() => {
                 await fpi._addItem(acc1.address,"bag",["color","","Max weight","",""],["red","","5","",""]);
-                hist=await fpi.getHistory(0);
-               // console.log(hist);
-
+                const hist=await fpi.getHistory(0);
+                const histString=hist[0].split(' ').reverse().slice(0,5).reverse().join(' ');
+                expect(histString).to.equal("GMT by sampath (0xf39fd6e51aad88f6f4ce6ab8827279cfffb92266 )");
+                expect(hist.length).to.equal(1);
             })
     })
 
@@ -167,7 +185,7 @@ const {
             await fpi._addUser(acc2.address,"kumar");
             await fpi._addUser(acc3.address,"sam");
             await fpi._addItem(acc1.address,"bag",[ 'color', '', 'Max weight', '', '' ],["red","","5","",""]);
-            await fpi._addItem(acc1.address,"shirt",[ 'color', 'brand', 'Cost', '', '' ],["black","calvin clein","5000","",""]);
+            await fpi._addItem(acc1.address,"shirt",[ 'color', 'brand', 'Cost', '', '' ],["black","calvin klein","5000","",""]);
             await fpi._addItem(acc3.address,"watch",["cost","","color","","type"],["400","","red","","digital"]);
             hash0=await fpi._getHashFromId(0);
             hash1=await fpi._getHashFromId(1);
@@ -189,6 +207,42 @@ const {
                 expect (transaction.feature_keys[0][x]).to.equal(feature_keys[0][x]);
                 expect (transaction.feature_values[0][x]).to.equal(feature_values[0][x]);
             }
+
+            transaction = await fpi._listAllUserItems(acc1.address);
+            console.log(transaction.names);
+            names = ["shirt"];
+            feature_keys = [[ 'color', 'brand', 'Cost', '', '' ]];
+            feature_values = [["black","calvin klein","5000","",""]];
+            ids=[hash1];
+            expect (transaction.ids[0]).to.equal(ids[0]);
+            expect (transaction.names[0]).to.equal(names[0]);
+            for(x=0;x<5;x++)
+            {
+                expect (transaction.feature_keys[0][x]).to.equal(feature_keys[0][x]);
+                expect (transaction.feature_values[0][x]).to.equal(feature_values[0][x]);
+            }
+
+        })
+
+        it('Check ownership after transfer and add item', async () => {
+            id = await fpi._getHashFromId(0);
+            await fpi._transfer(acc1.address,acc2.address,id);
+            id = await fpi._getHashFromId(1);
+            await fpi._transfer(acc1.address,acc2.address,id);
+            await fpi._addItem(acc1.address,"bag",[ 'color', '', 'Max weight', '', '' ],["red","","5","",""]);
+            transaction = await fpi._listAllUserItems(acc2.address);
+            names = ["bag"];
+            feature_keys = [[ 'color', '', 'Max weight', '', '' ]];
+            feature_values = [["red","","5","",""]];
+            ids=[hash0];
+            expect (transaction.ids[0]).to.equal(ids[0]);
+            expect (transaction.names[0]).to.equal(names[0]);
+            for(x=0;x<5;x++)
+            {
+                expect (transaction.feature_keys[0][x]).to.equal(feature_keys[0][x]);
+                expect (transaction.feature_values[0][x]).to.equal(feature_values[0][x]);
+            }
+
         })
 
         it('Check item assignment after transfer', async () => {

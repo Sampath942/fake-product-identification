@@ -3,7 +3,6 @@ import { Link } from "react-router-dom";
 import "./components.css";
 import {ethers} from 'ethers';
 import React, {useState} from 'react'
-import ProRegistr from "./ProRegistr";
 import ListUserProducts from "./ListUserProducts";
 
 const ListProducts = () => {

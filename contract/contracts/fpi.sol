@@ -22,10 +22,10 @@ contract fpi {
     mapping (address => string) public OwnerToName;
     mapping (uint => address) public itemToOwner;
     mapping (uint => uint) private hashToId;
-    mapping (uint => string []) public history;
+    mapping (uint => string []) private history;
     item[] public items;
 
-   
+
 
     function getLengthItems () public view returns (uint) {
         return items.length;
@@ -40,6 +40,8 @@ contract fpi {
     function _getOwnerItems (address user) public view returns (uint[] memory) {
         return ownerItems[user];
     }
+
+   
 
 
     event itemAdded(string _name,string user,uint uniqueHash);
@@ -61,7 +63,9 @@ contract fpi {
         return index;
     }
 
-    function _recordTransaction (uint uniqueHash,address _from,address _to,uint flag) private{
+
+
+   function _recordTransaction (uint uniqueHash,address _from,address _to,uint flag) private {
         uint year;
         uint month;
         uint day;
@@ -78,14 +82,14 @@ contract fpi {
         }
         s=string.concat(s,Strings.toString(year),"-",Strings.toString(month),"-",Strings.toString(day)," ",Strings.toString(hour),":",Strings.toString(minute),":",Strings.toString(second)," GMT ");    
         if (flag==0) {
-        s=string.concat(s,"by ",_getOwnerToName(_from)," (",Strings.toHexString(uint256(uint160(_from)), 20)," )");
+        s=string.concat(s,"by ",OwnerToName[_from]," (",Strings.toHexString(uint256(uint160(_from)), 20)," )");
         }
         else {
-            s=string.concat(s," from ",_getOwnerToName(_from)," (",Strings.toHexString(uint256(uint160(_from)), 20),") to ",_getOwnerToName(_to)," (",Strings.toHexString(uint256(uint160(_to)), 20)," )");
+            s=string.concat(s," from ",OwnerToName[_from]," (",Strings.toHexString(uint256(uint160(_from)), 20),") to ",OwnerToName[_to]," (",Strings.toHexString(uint256(uint160(_to)), 20)," )");
         }
         history[uniqueHash].push(s);
-        emit TransactionRecorded(history[uniqueHash],s);
     }
+
 
     function _transfer_item(address _from, address _to, uint _hash) private{
         uint _id=hashToId[_hash];
@@ -132,7 +136,7 @@ contract fpi {
         }
 
         {
-         uint items_length=items.length;
+         uint items_length=items.length-1;
         _recordTransaction(uint(keccak256(abi.encodePacked(items_length))),_userAddress,_userAddress,0);
         uint uniqueHash=uint(keccak256(abi.encodePacked(items_length)));
         hashToId[uniqueHash]=items_length;
@@ -222,7 +226,7 @@ contract fpi {
         uint mhash=uint(keccak256(abi.encodePacked(m)));
         return history[mhash];
     }
-    function _testHistory () public view returns (string [][] memory) {
+     function _testHistory () public view returns (string [][] memory) {
         uint m=0;
         uint mhash=uint(keccak256(abi.encodePacked(m)));
         string [][] memory temp;
@@ -277,7 +281,7 @@ contract fpi {
         vals[2]="cotton";
         vals[3]="";
         vals[4]="";
-       // _addItem(msg.sender,"shirt",ftrs,vals);
+        _addItem(msg.sender,"shirt",ftrs,vals);
         ftrs[0]="cost";
         ftrs[1]="color";
         ftrs[2]="type";
@@ -288,7 +292,7 @@ contract fpi {
         vals[2]="polyester";
         vals[3]="";
         vals[4]="";
-       // _addItem(msg.sender,"bag",ftrs,vals);
+        _addItem(msg.sender,"bag",ftrs,vals);
 
 
     }
