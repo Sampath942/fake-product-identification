@@ -41,14 +41,14 @@ const WalletConnect = ({flag}) => {
 
     return (
         
-        <div className="card">
+        <div className="wallet-wrapper">
             {defaultAccount && !flag && <ProRegistr account={defaultAccount}/>}
             {defaultAccount && flag && <ListUserProducts account={defaultAccount}/>}
             {!defaultAccount && <div className="card-content">
                 <div className="card-title">
                     <h4>Link to your Ethereum wallet </h4>
                 </div>
-                <div className="col-md-12">
+                <div className="connect">
                     <button className="btn btn-success m-2" onClick={connectWalletHandler}>Connect</button>
                 </div>
                 </div>}
