@@ -1,13 +1,14 @@
 // import {BrowserRouter as Router,Route,Routes} from 'react-router-dom';
-import { Link } from "react-router-dom";
+//import { Link } from "react-router-dom";
 import "./components.css";
 import {ethers} from 'ethers';
 import React, {useState} from 'react'
 import ProRegistr from "./ProRegistr";
+import ListUserProducts from "./ListUserProducts";
 
 // import "./WalletCardEthers.js";
 
-const AddProduct = () => {
+const WalletConnect = ({flag}) => {
     const [defaultAccount, setDefaultAccount] = useState(null);
     const [errorMessage, setErrorMessage] = useState(null);
 	
@@ -41,7 +42,8 @@ const AddProduct = () => {
     return (
         
         <div className="card">
-            {defaultAccount && <ProRegistr account={defaultAccount}/>}
+            {defaultAccount && !flag && <ProRegistr account={defaultAccount}/>}
+            {defaultAccount && flag && <ListUserProducts account={defaultAccount}/>}
             {!defaultAccount && <div className="card-content">
                 <div className="card-title">
                     <h4>Link to your Ethereum wallet </h4>
@@ -57,4 +59,4 @@ const AddProduct = () => {
     );
 }
 
-export default AddProduct;
+export default WalletConnect;

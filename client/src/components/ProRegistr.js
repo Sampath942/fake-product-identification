@@ -53,7 +53,7 @@ const ProRegistr = ({account}) => {
   const valuesArray =[val1.current.value,val2.current.value,val3.current.value,val4.current.value,val5.current.value];
   const transaction = await Fpi._addItem(account,proname.current.value,KeysArray,valuesArray);
   const receipt = await transaction.wait();
-  const uniqueHash = receipt.events[1].args.uniqueHash;
+  const uniqueHash = receipt.events[0].args.uniqueHash;
   console.log(transaction);
   console.log(receipt);
   console.log(uniqueHash);

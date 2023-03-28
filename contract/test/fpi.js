@@ -209,7 +209,7 @@ const {
             }
 
             transaction = await fpi._listAllUserItems(acc1.address);
-            console.log(transaction.names);
+            //console.log(transaction.names);
             names = ["shirt"];
             feature_keys = [[ 'color', 'brand', 'Cost', '', '' ]];
             feature_values = [["black","calvin klein","5000","",""]];

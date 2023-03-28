@@ -3,6 +3,7 @@ import { ethers } from "ethers"
 import fpi from "../fpi.json";
 import { useState,useEffect,useRef } from 'react';
 import AddUser from './AddUser';
+import Modal from 'react-modal';
 
 const ListUserProducts = ({account}) => {
     const [Fpi,setFpi] = useState(null);
@@ -10,6 +11,8 @@ const ListUserProducts = ({account}) => {
     const [useritems,setUserItems] = useState(null);
     const [loading,setLoading] = useState(true);
     const [userName,setUserName] = useState(null);
+    const [modalIsOpen, setModalIsOpen] = useState(false);
+    const [recipientAddress, setRecipientAddress] = useState('');
 
     useEffect (() => {
       setLoading(true);
@@ -22,12 +25,12 @@ const ListUserProducts = ({account}) => {
           const Fpi = new ethers.Contract(contractAddress,fpi.abi,signer);
           setFpi(Fpi);
           setProvider(provider);
-          console.log(Fpi);
+          //console.log(Fpi);
           const useritems=await Fpi._listAllUserItems(account);
           setUserItems(useritems);
-          console.log(useritems);
+          //console.log(useritems);
           const UserName = await Fpi._getOwnerToName(account);
-          console.log(UserName);
+          //console.log(UserName);
           setUserName(UserName);
           
         };
@@ -35,11 +38,34 @@ const ListUserProducts = ({account}) => {
         loadProvider();
         setLoading(false);
        },[account]);
+
+       
+  Modal.setAppElement('#root');
+  const handleTransferClick = () => {
+    setModalIsOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalIsOpen(false);
+  };
+
+  const handleRecipientAddressChange = (event) => {
+    setRecipientAddress(event.target.value);
+  };
+
+  const handleTransferConfirm = async (e) => {
+    console.log(`Transfer to ${recipientAddress} confirmed`);
+    console.log(useritems);
+    console.log(e);
+    //await Fpi.transfer(account,recipientAddress);
+    setRecipientAddress('');
+    setModalIsOpen(false);
+  };
         
     const Card = ( pname , f1 , f2 , f3 , f4 , f5) => { return { pname : pname , f1 : f1, f2 : f2, f3 : f3 , f4 : f4 , f5 : f5 } }
     let obj=[];
     if(!loading && useritems){
-    console.log(useritems);
+    //console.log(useritems);
     let P_Name=useritems.names;
     let Key_Array=useritems.feature_keys;
     let Value_Array=useritems.feature_values;
@@ -75,7 +101,7 @@ const ListUserProducts = ({account}) => {
               {
                 obj.map((val,i) =>
                 <tr key={i}>
-                  <td> {val.pname}</td>
+                  <td><div> {val.pname} <button onClick={handleTransferClick}>Transfer</button></div></td>
                   <td> {val.f1} </td>
                   <td> {val.f2} </td>
                   <td> {val.f3} </td>
@@ -88,7 +114,12 @@ const ListUserProducts = ({account}) => {
             </tbody>
          </table>}
          {loading && <div>....Loading</div>}
-
+         {!loading && <Modal isOpen={modalIsOpen} onRequestClose={handleModalClose}>
+        <h2>Enter Recipient Address</h2>
+        <input type="text" value={recipientAddress} onChange={handleRecipientAddressChange} />
+        <button onClick={handleTransferConfirm}>Confirm</button>
+        <button onClick={handleModalClose}>Cancel</button>
+      </Modal>}
     </div> 
    );
 }
