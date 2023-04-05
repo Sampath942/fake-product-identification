@@ -38,6 +38,7 @@ contract fpi {
 
  // _getOwnerItems is just a helper function used in test function to visualize the items......Once frontend work is complete this can be removed
     function _getOwnerItems (address user) public view returns (uint[] memory) {
+        require(address(user) != address(0));   
         return ownerItems[user];
     }
 
@@ -328,4 +329,7 @@ contract fpi {
         //_transfer_item(msg.sender,myAddress,uint(keccak256(abi.encodePacked(i+1))));
         _transfer_item(msg.sender,myAddress,uint(keccak256(abi.encodePacked(i))));
     }
+
+    
+
 }

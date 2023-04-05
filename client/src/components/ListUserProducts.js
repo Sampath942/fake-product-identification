@@ -4,8 +4,7 @@ import fpi from "../fpi.json";
 import { useState,useEffect,useRef } from 'react';
 import AddUser from './AddUser';
 import Modal from 'react-modal';
-
-
+import Card from './Card';
 
 const ListUserProducts = ({account}) => {
     const [Fpi,setFpi] = useState(null);
@@ -13,28 +12,9 @@ const ListUserProducts = ({account}) => {
     const [useritems,setUserItems] = useState(null);
     const [loading,setLoading] = useState(true);
     const [userName,setUserName] = useState(null);
-    const [modalIsOpen, setModalIsOpen] = useState(false);
-    const [recipientAddress, setRecipientAddress] = useState('');
-    const Card = ({ id,pname, f1, f2, f3, f4, f5 }) => {
-      console.log(pname,f1,f2,f3,f4,f5);
-      const handleTransferClick = () => {
-        setModalIsOpen(true);
-      };
-    
-      return (
-        <div className='card'>
-          <h2>{id+1}. {pname}</h2>
-          <ul>
-            <li>{f1}</li>
-            <li>{f2}</li>
-            <li>{f3}</li>
-            <li>{f4}</li>
-            <li>{f5}</li>
-          </ul>
-          <button onClick={handleTransferClick}>Transfer</button>
-        </div>
-      );
-    };
+    // const [modalIsOpen, setModalIsOpen] = useState(false);
+    // const [recipientAddress, setRecipientAddress] = useState('');
+
     useEffect (() => {
       setLoading(true);
         const loadProvider= async () => {
@@ -61,34 +41,35 @@ const ListUserProducts = ({account}) => {
        },[account]);
 
        
-  Modal.setAppElement('#root');
-  
-  const handleModalClose = () => {
-    setModalIsOpen(false);
-  };
+  // Modal.setAppElement('#root');
+  // const handleTransferClick = () => {
+  //   setModalIsOpen(true);
+  // };
 
-  const handleRecipientAddressChange = (event) => {
-    setRecipientAddress(event.target.value);
-  };
+  // const handleModalClose = () => {
+  //   setModalIsOpen(false);
+  // };
 
-  const handleTransferConfirm = async () => {
-    console.log(`Transfer to ${recipientAddress} confirmed`);
-    console.log(useritems);
-    //console.log(id);
-    //console.log(e);
-    //await Fpi.transfer(account,recipientAddress);
-    setRecipientAddress('');
-    setModalIsOpen(false);
-  };
+  // const handleRecipientAddressChange = (event) => {
+  //   setRecipientAddress(event.target.value);
+  // };
+
+  // const handleTransferConfirm = async (e) => {
+  //   console.log(`Transfer to ${recipientAddress} confirmed`);
+  //   console.log(useritems);
+  //   console.log(e);
+  //   //await Fpi.transfer(account,recipientAddress);
+  //   setRecipientAddress('');
+  //   setModalIsOpen(false);
+  // };
         
-  
     let obj=[];
     if(!loading && useritems){
     //console.log(useritems);
     let P_Name=useritems.names;
     let Key_Array=useritems.feature_keys;
     let Value_Array=useritems.feature_values;
-    console.log(P_Name);
+      
     for (let i=0;i<P_Name.length;i++)
     {       
       let f1=" "+Key_Array[i][0]+" : "+Value_Array[i][0]+" ";
@@ -101,33 +82,34 @@ const ListUserProducts = ({account}) => {
     }
 
   return ( 
-    <div className='your-component'>
-      <div className='component-wrapper'>
+    <div className='your-component center'>
       {loading && <div>....Loading</div>}
       {!loading && (!userName || userName==='') && <AddUser Fpi={Fpi} account={account} flag={1}/>}
-         {!loading && (userName && userName!=='') && 
-         <div>
-         {obj.map((item, index) => (
-           <Card 
-             key={index}
-             id={index}
-             pname={item[0]}
-             f1={item[1]}
-             f2={item[2]}
-             f3={item[3]}
-             f4={item[4]}
-             f5={item[5]}
-           />
-         ))}
-       </div>}
-        
-         {!loading && <Modal isOpen={modalIsOpen} onRequestClose={handleModalClose}>
+         {!loading && (userName && userName!=='') && <div>
+      {obj.map((item, index) => (
+        <Card
+          key={index}
+          pname={item[0]}
+          f1={item[1]}
+          f2={item[2]}
+          f3={item[3]}
+          f4={item[4]}
+          f5={item[5]}
+          _from={account}
+          _ids={useritems.ids}
+          curr_id={index}
+          Fpi={Fpi}
+          setUserItems={setUserItems}
+        />
+      ))}
+    </div>}
+         
+         {/* {!loading && <Modal isOpen={modalIsOpen} onRequestClose={handleModalClose}>
         <h2>Enter Recipient Address</h2>
         <input type="text" value={recipientAddress} onChange={handleRecipientAddressChange} />
         <button onClick={handleTransferConfirm}>Confirm</button>
         <button onClick={handleModalClose}>Cancel</button>
-      </Modal>}
-      </div>
+      </Modal>} */}
     </div> 
    );
 }

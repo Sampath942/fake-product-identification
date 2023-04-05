@@ -23,6 +23,10 @@ const {
             const result = await fpi._getOwnerToName(acc1.address);
             expect (result).to.equal("sampath");
         })    
+        it('return empty string for user account that doesn\'t exist', async () => {
+            const result = await fpi._getOwnerToName(acc2.address);
+            expect (result).to.equal("");
+        })
     })
    
     describe ("User not existing ", () => {
