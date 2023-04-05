@@ -7,6 +7,7 @@ import ScanProduct from './components/ScanProduct';
 import NotFound from './components/NotFound';
 import Welcome from './components/Welcome';
 import WalletConnect from './components/WalletConnect';
+import QrCodeScanner from './components/QrCodeScanner';
 
 
 
@@ -21,7 +22,7 @@ function App() {
     <Route exact path="/" element={<Welcome />}/>
     <Route exact path="/add" element={<WalletConnect flag={0} />} />
     <Route exact path="/list" element={<WalletConnect flag={1} />} />
-    <Route exact path="/scan" element={<ScanProduct />} />
+    <Route exact path="/scan" element={<QrCodeScanner />} />
     <Route path="*" element={<NotFound />}/>
     </Routes>
     </Router>

@@ -1,29 +1,33 @@
+import React, { useEffect, useRef } from "react";
+import QRCode from "qrcode";
 
-import React from 'react'
-import Button from 'react-bootstrap/Button';
+function QrCode({ data }) {
+  const canvasRef = useRef(null);
 
-import { QRCodeCanvas } from "qrcode.react";
+  useEffect(() => {
+    console.log(data);
+    QRCode.toCanvas(canvasRef.current, data);
+  }, [data]);
 
-const QrCode = ({hashString}) => {
-  
+  const handleDownloadClick = () => {
+    const canvas = canvasRef.current;
+    const dataURL = canvas.toDataURL("image/png");
 
-  const qrcode = (
-    <QRCodeCanvas
-      id="qrCode"
-      value={hashString}
-      size={300}
-      bgColor={"#00ff00"}
-      level={"H"}
-    />
-  );
+    // Create a temporary link and download the data URL
+    const link = document.createElement("a");
+    link.download = "qr-code.png";
+    link.href = dataURL;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   return (
-    <div className="qrcode__container">
-      <div className="qrimage">{qrcode}</div>
-      <div className="input__group">
-        
-      </div>
+    <div>
+      <canvas ref={canvasRef}></canvas>
+      <button onClick={handleDownloadClick}>Download QR Code</button>
     </div>
   );
-};
+}
 
 export default QrCode;

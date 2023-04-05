@@ -35,20 +35,20 @@ const ProRegistr = ({account}) => {
  const handleSubmit =  async(event)  => {
   console.log(account);
   event.preventDefault()
-  alert(`
-    ___Your Details___\n
-    key0: ${proname.current.value}
-    key1: ${key1.current.value}
-    key2: ${key2.current.value}
-    key3: ${key3.current.value}
-    key4: ${key4.current.value}
-    key5: ${key5.current.value}
-    feature1: ${val1.current.value}
-    feature2: ${val2.current.value}
-    feature3: ${val3.current.value}
-    feature4: ${val4.current.value}
-    feature5: ${val5.current.value}
-  `)
+  // alert(`
+  //   ___Your Details___\n
+  //   key0: ${proname.current.value}
+  //   key1: ${key1.current.value}
+  //   key2: ${key2.current.value}
+  //   key3: ${key3.current.value}
+  //   key4: ${key4.current.value}
+  //   key5: ${key5.current.value}
+  //   feature1: ${val1.current.value}
+  //   feature2: ${val2.current.value}
+  //   feature3: ${val3.current.value}
+  //   feature4: ${val4.current.value}
+  //   feature5: ${val5.current.value}
+  // `)
   const KeysArray =[key1.current.value,key2.current.value,key3.current.value,key4.current.value,key5.current.value];
   const valuesArray =[val1.current.value,val2.current.value,val3.current.value,val4.current.value,val5.current.value];
   const transaction = await Fpi._addItem(account,proname.current.value,KeysArray,valuesArray);
@@ -192,7 +192,7 @@ const ProRegistr = ({account}) => {
         </div>
       </form>
       </div>}
-      {!loading && userName && userName!=='' && uniqueHash!=='' && <QrCode />}
+      {!loading && userName && userName!=='' && uniqueHash!=='' && <QrCode data={JSON.stringify(uniqueHash)}/>}
     </>
   )
 } 
