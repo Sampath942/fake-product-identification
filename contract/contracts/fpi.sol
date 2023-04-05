@@ -224,8 +224,7 @@ contract fpi {
 
 // From here on every function used is just for the sake of testing purposes.....can be deleted once the code is completely checked and functional
     function getHistory (uint m) public view returns (string [] memory) {
-        uint mhash=uint(keccak256(abi.encodePacked(m)));
-        return history[mhash];
+        return history[m];
     }
      function _testHistory () public view returns (string [][] memory) {
         uint m=0;
